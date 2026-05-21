@@ -26,4 +26,4 @@
 
 <p>Esse projeto tem objetivo de analisar essas variações e entender se estamos melhorando o ambiente de trabalho e como podemos ajudar para essas melhorias.</p>
 
-<p>Desenvolvido por <span style="font-weight:bold">@sergiobfj</span>, <span style="font-weight: bold">@gabelemos</span> e <span style="font-weight: bold">@omanodavirtronlakkk</span>.</p>
+<p>Desenvolvido por <span style="font-weight:bold">@sergiobfj</span>, <span style="font-weight: bold">@gabelemos</span> e <span style="font-weight: bold">@igordinizec</span>.</p>
