@@ -53,8 +53,7 @@ def get_dataset(force_reload: bool = False, cache_file: Optional[str] = None) ->
         print("[converter] usando cache em memória")
         return _IN_MEMORY_CACHE
 
-    cache_path = Path(cache_file) if cache_file else Path(__file__).parent / "data" / CACHE_NAME
-
+    cache_path = Path(cache_file) if cache_file else Path(__file__).parent / "cache" / CACHE_NAME
     should_reload = force_reload or _is_cache_stale(cache_path)
 
     if not should_reload:
