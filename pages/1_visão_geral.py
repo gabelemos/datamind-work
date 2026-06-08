@@ -13,8 +13,12 @@ col1, col2, col3, col4 = st.columns(4)
 k = kpis.get("kpis", {})
 col1.metric("Total de Notificações", f"{k.get('total_registros', 0):,}".replace(",", "."))
 col2.metric("Média de Idade",        f"{k.get('media_idade', 0):.1f} anos")
-col3.metric("Mediana de Idade",      f"{k.get('mediana_idade', 0):.1f} anos")
-col4.metric("Anos na Base",          str(k.get("anos_disponiveis", [])))
+_sexo_raw = k.get("top_sexo", {}).get("CS_SEXO", "-")
+_sexo_label = {"M": "Masculino", "F": "Feminino", "I": "Não informado"}.get(_sexo_raw, _sexo_raw)
+col3.metric("Sexo Predominante", _sexo_label)
+anos = k.get("anos_disponiveis", [])
+anos_label = f"{min(anos)}–{max(anos)} ({len(anos)} anos)" if anos else "-"
+col4.metric("Anos na Base", anos_label)
 
 st.divider()
 
@@ -38,7 +42,10 @@ col1, col2 = st.columns(2)
 
 with col1:
     st.subheader("Por Sexo")
-    casos_sexo = kpis["aggregations"]["casos_por_sexo"]
+    casos_sexo = kpis["aggregations"]["casos_por_sexo"].copy()
+    casos_sexo["CS_SEXO"] = casos_sexo["CS_SEXO"].map(
+        {"M": "Masculino", "F": "Feminino", "I": "Não informado"}
+    ).fillna(casos_sexo["CS_SEXO"])
     fig2 = px.pie(casos_sexo, names="CS_SEXO", values="count",
         color_discrete_sequence=px.colors.sequential.Blues_r)
     fig2.update_traces(textposition="inside", textinfo="percent+label")
@@ -59,7 +66,11 @@ col3, col4 = st.columns(2)
 
 with col3:
     st.subheader("Por Raça/Cor")
-    casos_raca = kpis["aggregations"]["casos_por_raca"]
+    casos_raca = kpis["aggregations"]["casos_por_raca"].copy()
+    casos_raca["CS_RACA"] = casos_raca["CS_RACA"].astype(str).map({
+        "1": "Branca", "2": "Preta", "3": "Amarela",
+        "4": "Parda", "5": "Indígena", "9": "Ignorado", "": "Não informado",
+    }).fillna(casos_raca["CS_RACA"].astype(str))
     fig4 = px.bar(casos_raca, x="count", y="CS_RACA", orientation="h",
         color="count", color_continuous_scale="Blues",
         labels={"CS_RACA": "Raça/Cor", "count": "Notificações"})
@@ -68,7 +79,19 @@ with col3:
 
 with col4:
     st.subheader("Por Evolução do Caso")
-    casos_evolucao = kpis["aggregations"]["casos_por_evolucao"]
+    casos_evolucao = kpis["aggregations"]["casos_por_evolucao"].copy()
+    casos_evolucao["EVOLUCAO"] = casos_evolucao["EVOLUCAO"].astype(str).map({
+        "1": "Cura",
+        "2": "Óbito pelo agravo",
+        "3": "Óbito por outras causas",
+        "4": "Óbito em investigação",
+        "5": "Transferência",
+        "6": "Alta com sequela",
+        "7": "Alta por abandono",
+        "8": "Encerrado por outra causa",
+        "9": "Ignorado",
+        "":  "Não informado",
+    }).fillna(casos_evolucao["EVOLUCAO"].astype(str))
     fig5 = px.pie(casos_evolucao, names="EVOLUCAO", values="count",
         color_discrete_sequence=px.colors.sequential.Blues_r)
     fig5.update_traces(textposition="inside", textinfo="percent+label")
