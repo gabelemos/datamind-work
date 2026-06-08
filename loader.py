@@ -73,14 +73,19 @@ def tratar_erros(df: pd.DataFrame) -> pd.DataFrame:
     # remove linhas completamente vazias
     df = df.dropna(how="all")
 
-    # converte idade para número
+    # converte idade para número e decodifica o formato SINAN
+    # NU_IDADE_N: primeiro dígito = unidade (4=anos, 3=meses, 2=dias, 1=horas)
+    # os 3 últimos dígitos = valor real. Ex: 4030 = 30 anos
     if "NU_IDADE_N" in df.columns:
         df["NU_IDADE_N"] = pd.to_numeric(df["NU_IDADE_N"], errors="coerce")
+        mask_anos = (df["NU_IDADE_N"] >= 4000) & (df["NU_IDADE_N"] < 5000)
+        df["NU_IDADE_N"] = df["NU_IDADE_N"].where(~mask_anos, df["NU_IDADE_N"] - 4000)
+        df.loc[~mask_anos, "NU_IDADE_N"] = pd.NA
 
     # padroniza sexo para M, F ou I (ignorado/inválido)
     if "CS_SEXO" in df.columns:
         df["CS_SEXO"] = df["CS_SEXO"].astype(str).str.strip().str.upper()
-        df.loc[~df["CS_SEXO"].isin(["M", "F"]), "ID_SEXO"] = "I"
+        df.loc[~df["CS_SEXO"].isin(["M", "F"]), "CS_SEXO"] = "I"
 
     return df
 

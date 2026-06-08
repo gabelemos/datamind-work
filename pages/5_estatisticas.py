@@ -36,11 +36,36 @@ st.divider()
 
 # ── ESCOLARIDADE ──────────────────────────────────────────────────────────────
 st.subheader("Distribuição por Escolaridade")
-casos_escol = kpis["aggregations"]["casos_por_escolaridade"]
+_ESCOL_MAP = {
+    "00": "Analfabeto",
+    "01": "Fund. I incompleto",
+    "02": "Fund. I completo",
+    "03": "Fund. II incompleto",
+    "04": "Fund. II completo",
+    "05": "Médio incompleto",
+    "06": "Médio completo",
+    "07": "Superior incompleto",
+    "08": "Superior completo",
+    "09": "Ignorado",
+    "10": "Não se aplica",
+    "":  "Não informado",
+}
+_ESCOL_ORDEM = list(_ESCOL_MAP.values())
+
+casos_escol = kpis["aggregations"]["casos_por_escolaridade"].copy()
+casos_escol["CS_ESCOL_N"] = casos_escol["CS_ESCOL_N"].astype(str).map(_ESCOL_MAP).fillna(casos_escol["CS_ESCOL_N"].astype(str))
+casos_escol["_ordem"] = casos_escol["CS_ESCOL_N"].map({v: i for i, v in enumerate(_ESCOL_ORDEM)}).fillna(99)
+casos_escol = casos_escol.sort_values("_ordem")
+
 fig2 = px.bar(casos_escol, x="CS_ESCOL_N", y="count",
     color="count", color_continuous_scale="Blues",
-    labels={"CS_ESCOL_N": "Escolaridade", "count": "Notificações"})
-fig2.update_layout(coloraxis_showscale=False, plot_bgcolor="white")
+    labels={"CS_ESCOL_N": "Escolaridade", "count": "Notificações"},
+    text="count")
+fig2.update_traces(textposition="outside")
+fig2.update_layout(
+    coloraxis_showscale=False, plot_bgcolor="white",
+    xaxis_tickangle=-30,
+)
 st.plotly_chart(fig2, use_container_width=True)
 
 st.divider()
